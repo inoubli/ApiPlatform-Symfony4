@@ -1,0 +1,39 @@
+security:
+    # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+    encoders:
+        App\Entity\User: bcrypt
+    providers:
+#        in_memory: { memory: ~ }
+        database:
+            entity:
+                class: App\Entity\User
+                property: username
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        api:
+            pattern: ^/api
+            stateless: true
+            anonymous: true
+            json_login:
+                #Here authentication will happen (token generation)
+                check_path: /api/login_check
+                #success and failure handler are event handler from Lexik bundle
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+                #
+            guard:
+                authenticators:
+                    - lexik_jwt_authentication.jwt_token_authenticator
+
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+#    - { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+    role_hiearchy:
+        ROLE_WRITER: ROLE_COMMENTATOR
+        ROLE_ADMIN : [ROLE_WRITER, ROLE_EDITOR]
+        ROLE_SUPERADMIN: ROLE_ADMIN
